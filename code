@@ -1,0 +1,48 @@
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+
+data = pd.read_csv('Dataset.csv')
+
+data.head()
+data.columns
+data=data.drop( ['Surname ','Surname_tfidf_0         ', 'Surname_tfidf_1         ','Surname_tfidf_2         ','Surname_tfidf_3         ','Surname_tfidf_4         ','HasCrCard '],axis=1)
+data.duplicated().sum()
+data = data.drop_duplicates()
+len(data)
+
+data.isnull().sum()
+
+x = data.drop(['Exited '],axis = 1)
+y = data.iloc[:, 7].values
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x = sc.fit_transform(x)
+
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2,random_state=0)
+
+import tensorflow  as tf
+model = tf.keras.Sequential()
+
+model.add(tf.keras.layers.Dense(units = 9,activation='relu'))
+model.add(tf.keras.layers.Dropout(0.3))
+model.add(tf.keras.layers.Dense(units = 5,activation='relu'))
+model.add(tf.keras.layers.Dropout(0.3))
+model.add(tf.keras.layers.Dense(units = 1,activation="sigmoid"))  
+
+model.compile(optimizer= 'adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+model.fit(x_train,y_train,epochs=10)  
+  
+from sklearn.linear_model import LogisticRegression
+classifier = LogisticRegression()
+classifier.fit(x_train,y_train)
+
+y_pred = classifier.predict(x_test)
+from sklearn.metrics import accuracy_score,confusion_matrix
+cm =  confusion_matrix(y_test,y_pred)
+print(cm)
+accuracy_score(y_test,y_pred)  
+  
